@@ -40,7 +40,8 @@ local columnPositions = {
     role = 80,
     name = 120,
     class = 250,
-    foodBuff = 300
+    personalBuffs = 300,
+	raidBuffs = 500
 }
 
 -- Create header line for column titles
@@ -49,7 +50,7 @@ local headers = {
     role = ReadyCheck:CreateFontString(nil, "OVERLAY", "GameFontHighlight"),
     name = ReadyCheck:CreateFontString(nil, "OVERLAY", "GameFontHighlight"),
     class = ReadyCheck:CreateFontString(nil, "OVERLAY", "GameFontHighlight"),
-    foodBuff = ReadyCheck:CreateFontString(nil, "OVERLAY", "GameFontHighlight"),
+    personalBuffs = ReadyCheck:CreateFontString(nil, "OVERLAY", "GameFontHighlight"),
 }
 
 headers.ready:SetPoint("TOPLEFT", columnPositions.ready-17, -50)
@@ -68,9 +69,9 @@ headers.class:SetPoint("TOPLEFT", columnPositions.class-10, -50)
 headers.class:SetFont(headers.class:GetFont(), 15)
 headers.class:SetText("Class")
 
-headers.foodBuff:SetPoint("TOPLEFT", columnPositions.foodBuff, -50)
-headers.foodBuff:SetFont(headers.foodBuff:GetFont(), 15)
-headers.foodBuff:SetText("Food Buff")
+headers.personalBuffs:SetPoint("TOPLEFT", columnPositions.personalBuffs, -50)
+headers.personalBuffs:SetFont(headers.personalBuffs:GetFont(), 15)
+headers.personalBuffs:SetText("Food Buff")
 
 -- Create lines for raid member information
 ReadyCheck.lines = {}
@@ -81,7 +82,7 @@ for i = 1, 10 do
         role = ReadyCheck:CreateFontString(nil, "OVERLAY", "GameFontNormal"),
         name = ReadyCheck:CreateFontString(nil, "OVERLAY", "GameFontNormal"),
         class = ReadyCheck:CreateTexture(nil, "OVERLAY"),
-        foodBuff = ReadyCheck:CreateFontString(nil, "OVERLAY", "GameFontNormal"),
+        personalBuffs = ReadyCheck:CreateFontString(nil, "OVERLAY", "GameFontNormal"),
     }
     for key, element in pairs(ReadyCheck.lines[i]) do
         if key == "ready" or key == "class" then
@@ -218,7 +219,7 @@ local function DisplayRaidInfo()
                 role = ReadyCheck:CreateFontString(nil, "OVERLAY", "GameFontNormal"),
                 name = ReadyCheck:CreateFontString(nil, "OVERLAY", "GameFontNormal"),
                 class = ReadyCheck:CreateTexture(nil, "OVERLAY"),
-                foodBuff = ReadyCheck:CreateFontString(nil, "OVERLAY", "GameFontNormal"),
+                personalBuffs = ReadyCheck:CreateFontString(nil, "OVERLAY", "GameFontNormal"),
             }
             for key, element in pairs(ReadyCheck.lines[i]) do
                 if key == "ready" or key == "class" then
@@ -247,7 +248,7 @@ local function DisplayRaidInfo()
         raidInfo[name].name = name
         raidInfo[name].class = class
         raidInfo[name].role = role
-        raidInfo[name].foodBuff = raidInfo[name].foodBuff or "No Buff"
+        raidInfo[name].personalBuffs = raidInfo[name].personalBuffs or "No Buff"
 
         local line = ReadyCheck.lines[i]
         
@@ -255,7 +256,7 @@ local function DisplayRaidInfo()
         if line then
             line.role:SetFormattedText("%s", roleIcons[raidInfo[name].role])
             line.name:SetText(raidInfo[name].name)
-			line.foodBuff:SetText(raidInfo[name].foodBuff)
+			line.personalBuffs:SetText(raidInfo[name].personalBuffs)
 			if raidInfo[name].specIcon then
 				line.class:SetTexture(raidInfo[name].specIcon)
 			else
