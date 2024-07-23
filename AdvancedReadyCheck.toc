@@ -1,8 +1,9 @@
 ## Interface: 50400
 ## Author: Interacti0n
 ## Version: 0.1
-## Title: ReadyCheck
+## Title: AdvancedReadyCheck
 ## Notes: Utility addon displaying information whenever there is Ready Check in party.
 ## DefaultState: Enabled
 
-ReadyCheck.lua
+AdvancedReadyCheck.lua
+AdvancedReadyCheck.xml

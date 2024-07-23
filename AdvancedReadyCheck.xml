@@ -1,0 +1,90 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/">
+    <!-- Main Frame -->
+    <Frame name="MyRaidInfoAddonFrame" parent="UIParent" frameStrata="HIGH" movable="true" resizeable="true">
+        <Size x="750" y="415"/>
+        <Anchors>
+            <Anchor point="CENTER"/>
+        </Anchors>
+        <Backdrop bgFile="Interface\\Tooltips\\UI-Tooltip-Background" 
+                  edgeFile="Interface\\Tooltips\\UI-Tooltip-Border"
+                  tile="true" tileSize="16" edgeSize="16"
+                  insets="4,4,4,4">
+            <BackdropColor r="0" g="0" b="0" a="0.9"/>
+        </Backdrop>
+
+        <!-- Title -->
+        <FontString name="$parentTitle" font="GameFontHighlight" justifyH="CENTER">
+            <Size x="200" y="20"/>
+            <Anchors>
+                <Anchor point="TOP" x="0" y="-10"/>
+            </Anchors>
+            <Text>Advanced Ready Check</Text>
+        </FontString>
+
+        <!-- Time Remaining -->
+        <FontString name="$parentTimeRemaining" font="GameFontHighlight">
+            <Size x="200" y="20"/>
+            <Anchors>
+                <Anchor point="TOPRIGHT" relativePoint="TOPRIGHT" x="-50" y="-10"/>
+            </Anchors>
+            <Text>Ready Check Finished</Text>
+        </FontString>
+
+        <!-- Headers -->
+        <FontString name="$parentHeaderReady" font="GameFontHighlight">
+            <Size x="100" y="20"/>
+            <Anchors>
+                <Anchor point="TOPLEFT" x="8" y="-50"/>
+            </Anchors>
+            <Text>Ready</Text>
+        </FontString>
+
+        <FontString name="$parentHeaderRole" font="GameFontHighlight">
+            <Size x="100" y="20"/>
+            <Anchors>
+                <Anchor point="TOPLEFT" x="63" y="-50"/>
+            </Anchors>
+            <Text>Role</Text>
+        </FontString>
+
+        <FontString name="$parentHeaderName" font="GameFontHighlight">
+            <Size x="100" y="20"/>
+            <Anchors>
+                <Anchor point="TOPLEFT" x="113" y="-50"/>
+            </Anchors>
+            <Text>Name</Text>
+        </FontString>
+
+        <FontString name="$parentHeaderClass" font="GameFontHighlight">
+            <Size x="100" y="20"/>
+            <Anchors>
+                <Anchor point="TOPLEFT" x="243" y="-50"/>
+            </Anchors>
+            <Text>Class</Text>
+        </FontString>
+
+        <FontString name="$parentHeaderConsumes" font="GameFontHighlight">
+            <Size x="100" y="20"/>
+            <Anchors>
+                <Anchor point="TOPLEFT" x="293" y="-50"/>
+            </Anchors>
+            <Text>Food/Flask</Text>
+        </FontString>
+
+        <!-- Close Button -->
+        <Button name="$parentCloseButton" inherits="UIPanelCloseButton">
+            <Size x="32" y="32"/>
+            <Anchors>
+                <Anchor point="TOPRIGHT" x="-5" y="-5"/>
+            </Anchors>
+        </Button>
+
+        <!-- Lines -->
+        <Frame name="$parentLines">
+            <Size x="750" y="400"/>
+            <Anchors>
+                <Anchor point="TOPLEFT" x="0" y="-80"/>
+            </Anchors>
+        </Frame>
+    </Frame>
+</Ui>
