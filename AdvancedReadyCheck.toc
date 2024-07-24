@@ -5,5 +5,6 @@
 ## Notes: Utility addon displaying information whenever there is Ready Check in party.
 ## DefaultState: Enabled
 
+Libs\LibGroupInSpecT-1.0\LibGroupInSpecT-1.0.lua
 AdvancedReadyCheck.lua
-AdvancedReadyCheck.xml
+

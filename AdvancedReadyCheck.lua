@@ -1,6 +1,36 @@
--- Initialize the main frame
-local ReadyCheck = _G["MyRaidInfoAddonFrame"]
-ReadyCheck:Hide()
+-- Library
+local LGIST = LibStub:GetLibrary("LibGroupInSpecT-1.0")
+
+-- Create the main frame
+local ReadyCheck = CreateFrame("Frame", "MyAddonFrame", UIParent)
+ReadyCheck:Hide() -- Hide the frame initially
+ReadyCheck:SetSize(750, 415) -- Set the size of the frame
+ReadyCheck:SetPoint("CENTER") -- Set the position of the frame
+ReadyCheck:SetMovable(true) -- Allow the frame to be moved
+ReadyCheck:EnableMouse(true) -- Enable mouse interaction
+
+ReadyCheck:SetBackdrop({
+    bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
+    edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+    tile = true,
+    tileSize = 16,
+    edgeSize = 16,
+    insets = { left = 4, right = 4, top = 4, bottom = 4 },
+})
+ReadyCheck:SetBackdropColor(0, 0, 0, 0.9) -- Set the background color to black with alpha 0.9
+
+
+-- Create a title for the frame
+ReadyCheck.title = ReadyCheck:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+ReadyCheck.title:SetPoint("TOP", 0, -10)
+ReadyCheck.title:SetFont(ReadyCheck.title:GetFont(), 15)
+ReadyCheck.title:SetText("Advanced Ready Check")
+
+-- Create a FontString to display the remaining time
+ReadyCheck.timeRemaining = ReadyCheck:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+ReadyCheck.timeRemaining:SetPoint("TOPRIGHT", ReadyCheck, "TOPRIGHT", -50, -10)
+ReadyCheck.timeRemaining:SetFont(ReadyCheck.timeRemaining:GetFont(), 15)
+ReadyCheck.timeRemaining:SetText("Ready Check Finished")
 
 -- Define column positions
 local columnPositions = {
@@ -8,47 +38,83 @@ local columnPositions = {
     role = 80,
     name = 120,
     class = 250,
-    consumes = 300,
-    flask = 300,
-    food = 330,
-    raidBuffs = 500
+	flask = 310,
+	food = 350,
+	raidBuffs = 500
 }
 
--- Retrieve and setup header and close button
-local title = ReadyCheck.title
-local timeRemaining = ReadyCheck.timeRemaining
+-- Create header line for column titles
 local headers = {
-    ready = _G["MyRaidInfoAddonFrameHeaderReady"],
-    role = _G["MyRaidInfoAddonFrameHeaderRole"],
-    name = _G["MyRaidInfoAddonFrameHeaderName"],
-    class = _G["MyRaidInfoAddonFrameHeaderClass"],
-    consumes = _G["MyRaidInfoAddonFrameHeaderConsumes"]
+    ready = ReadyCheck:CreateFontString(nil, "OVERLAY", "GameFontHighlight"),
+    role = ReadyCheck:CreateFontString(nil, "OVERLAY", "GameFontHighlight"),
+    name = ReadyCheck:CreateFontString(nil, "OVERLAY", "GameFontHighlight"),
+    class = ReadyCheck:CreateFontString(nil, "OVERLAY", "GameFontHighlight"),
+    flask = ReadyCheck:CreateFontString(nil, "OVERLAY", "GameFontHighlight"),
 }
-local closeButton = ReadyCheck.closeButton
 
--- Initialize lines
+headers.ready:SetPoint("TOPLEFT", columnPositions.ready-17, -50)
+headers.ready:SetFont(headers.ready:GetFont(), 15)
+headers.ready:SetText("Ready")
+
+headers.role:SetPoint("TOPLEFT", columnPositions.role-10, -50)
+headers.role:SetFont(headers.role:GetFont(), 15)
+headers.role:SetText("Role")
+
+headers.name:SetPoint("TOPLEFT", columnPositions.name+25, -50)
+headers.name:SetFont(headers.name:GetFont(), 15)
+headers.name:SetText("Name")
+
+headers.class:SetPoint("TOPLEFT", columnPositions.class-10, -50)
+headers.class:SetFont(headers.class:GetFont(), 15)
+headers.class:SetText("Class")
+
+headers.flask:SetPoint("TOPLEFT", columnPositions.flask-10, -50)
+headers.flask:SetFont(headers.flask:GetFont(), 15)
+headers.flask:SetText("Flask/Food")
+
+-- Create lines for raid member information
 ReadyCheck.lines = {}
+
+-- Create fonts or textures in lines that store data
 for i = 1, 10 do
     ReadyCheck.lines[i] = {
         ready = ReadyCheck:CreateTexture(nil, "OVERLAY"),
         role = ReadyCheck:CreateFontString(nil, "OVERLAY", "GameFontNormal"),
         name = ReadyCheck:CreateFontString(nil, "OVERLAY", "GameFontNormal"),
         class = ReadyCheck:CreateTexture(nil, "OVERLAY"),
-        flask = ReadyCheck:CreateTexture(nil, "OVERLAY"),
-        food = ReadyCheck:CreateTexture(nil, "OVERLAY"),
-        consumes = ReadyCheck:CreateFontString(nil, "OVERLAY", "GameFontNormal"),
+		flask = ReadyCheck:CreateTexture(nil, "OVERLAY"),
+		food = ReadyCheck:CreateTexture(nil, "OVERLAY"),
     }
     for key, element in pairs(ReadyCheck.lines[i]) do
         if key == "ready" or key == "class" or key == "flask" or key == "food" then
             element:SetSize(20, 20)
-        else
-            element:SetFont(element:GetFont(), 15)
+		else 
+			element:SetFont(element:GetFont(), 15)
         end
         element:SetPoint("TOPLEFT", columnPositions[key], -80 - (i - 1) * 25)
     end
 end
 
--- Define icons and textures
+-- Create a close button
+ReadyCheck.closeButton = CreateFrame("Button", nil, ReadyCheck, "UIPanelCloseButton")
+ReadyCheck.closeButton:SetPoint("TOPRIGHT", -5, -5)
+ReadyCheck.closeButton:SetScript("OnClick", function() ReadyCheck:Hide() end)
+
+-- Register for events
+ReadyCheck:RegisterEvent("READY_CHECK")
+ReadyCheck:RegisterEvent("READY_CHECK_CONFIRM")
+ReadyCheck:RegisterEvent("READY_CHECK_FINISHED")
+ReadyCheck:RegisterEvent("PLAYER_REGEN_DISABLED")
+ReadyCheck:RegisterEvent("GROUP_ROSTER_UPDATE")
+ReadyCheck:RegisterEvent("UNIT_CONNECTION")
+ReadyCheck:RegisterEvent("INSPECT_READY")
+ReadyCheck:RegisterEvent("UNIT_AURA")
+
+-- Register for callbacks
+LGIST.RegisterCallback(ReadyCheck, "GroupInSpecT_Update", "UpdateHandler")
+LGIST.Registercallback(ReadyCheck, "GroupInSpecT_Remove", "RemoveHandler")
+
+-- List of paths for Role Icons
 local roleIcons = {
     TANK = INLINE_TANK_ICON,
     HEALER = INLINE_HEALER_ICON,
@@ -56,12 +122,14 @@ local roleIcons = {
     NONE = "",
 }
 
+-- List of paths for Status Icons
 local statusTextures = {
     ready = "Interface\\RAIDFRAME\\ReadyCheck-Ready",
     notReady = "Interface\\RAIDFRAME\\ReadyCheck-NotReady",
     pending = "Interface\\RAIDFRAME\\ReadyCheck-Waiting"
 }
 
+-- List of paths for Class Icons
 local classIcons = {
     WARRIOR = "Interface\\Icons\\ClassIcon_Warrior",
     PALADIN = "Interface\\Icons\\ClassIcon_Paladin",
@@ -76,153 +144,258 @@ local classIcons = {
     DRUID = "Interface\\Icons\\ClassIcon_Druid",
 }
 
+-- List of Flask Buffs IDs (int5 str4 agi3 spirit2 stam1)
 local flaskBuffs = {
-    105689, -- Flask of Spring Blossoms
-    105691, -- Flask of the Warm Sun
-    105693, -- Flask of the Falling Leafs
-    105694, -- Flask of the Earth
-    105696, -- Flask of Winter's Bite
+    [105689] = "Interface\\Icons\\trade_alchemy_potione3", -- Flask of Spring Blossoms (AGI)
+    [105691] = "Interface\\Icons\\trade_alchemy_potione5", -- Flask of the Warm Sun (INT)
+    [105693] = "Interface\\Icons\\trade_alchemy_potione2", -- Flask of the Falling Leafs (Spirit)
+    [105694] = "Interface\\Icons\\trade_alchemy_potione1", -- Flask of the Earth (STAM)
+    [105696] = "Interface\\Icons\\trade_alchemy_potione4", -- Flask of Winter's Bite (STR)
 }
 
-local foodBuffs = {}
+-- List of Food Buffs IDs		
+local foodBuffs = {
+
+}
 
 local raidInfo = {}
 local readyCheckEndTime
-local inspectedPlayers = {}
+local numGroupMembers = 0
 
-local function GetUnitFromGUID(guid)
-    for _, unitId in ipairs({
-        "player", "target", "focus",
-        "party1", "party2", "party3", "party4",
-        "raid1", "raid2", "raid3", "raid4", "raid5", "raid6", "raid7", "raid8", "raid9", "raid10",
-        "raid11", "raid12", "raid13", "raid14", "raid15", "raid16", "raid17", "raid18", "raid19", "raid20",
-        "raid21", "raid22", "raid23", "raid24", "raid25", "raid26", "raid27", "raid28", "raid29", "raid30",
-        "raid31", "raid32", "raid33", "raid34", "raid35", "raid36", "raid37", "raid38", "raid39", "raid40",
-        "boss1", "boss2", "boss3", "boss4"
-    }) do
-        if UnitGUID(unitId) == guid then
-            return unitId
+local function UpdateBuff(unit)
+
+		-- Check for buffs
+        for j = 1, 40 do
+            local buff = select(11, UnitBuff(name, j))
+			--Flask Buffs
+            if buff and flaskBuffs[buff] then
+                raidInfo[unit].flask = flaskBuffs[buff]
+                break
+            end  
+
+			-- Fodd Buffs
+			
+			-- Raid Buffs
         end
-    end
-    return nil
+		
+		local num = 0
+		for i = 1, numGroupMembers do
+			local name = GetRaidRosterInfo(i)
+			if name == raidInfo[unit].name then
+				num = i
+				break
+			end
+		end
+		
+		local line = ReadyCheck.lines[num]
+		if line then
+			-- Flask
+            if raidInfo[name].flask then
+                line.flask:SetTexture(raidInfo[name].flask)
+            else
+                line.flask:SetTexture(statusTextures["notReady"])
+            end
+			-- Food
+			if raidInfo[name].food then
+				line.food:SetTexture(raidInfo[name].food)
+			else
+				line.food:SetTexture(statusTextures["notReady"])
+			end
+		end
+
 end
 
-local function QueueInspect(unitName)
-    if CanInspect(unitName) then
-        NotifyInspect(unitName)
-    else
-        inspectedPlayers[unitName] = true
-    end
-end
-
-local function UpdatePlayerSpecialization()
-    local specID = GetSpecialization()
-    if specID then
-        local _, _, _, specIcon = GetSpecializationInfo(specID)
-        raidInfo[UnitName("player")] = raidInfo[UnitName("player")] or {}
-        raidInfo[UnitName("player")].specIcon = specIcon
-    end
-end
-
-local function GetPlayerInfo(unitId)
-    local name = UnitName(unitId)
-    local role = UnitGroupRolesAssigned(unitId)
-    local class = select(2, UnitClass(unitId))
-    local classColor = select(1, GetClassColor(class))
-    local specIcon = GetSpecializationInfo(GetSpecialization() or 0)
-    local isReady = GetReadyCheckStatus(unitId)
-    local flask = nil
-    local food = nil
-    local buffs = { UnitBuff(unitId, 1) }
-    
-    for _, buffID in ipairs(flaskBuffs) do
-        if UnitBuff(unitId, GetSpellInfo(buffID)) then
-            flask = true
-            break
-        end
-    end
-    
-    for _, buff in pairs(buffs) do
-        if buff then
-            food = true
-            break
-        end
-    end
-    
-    return {
-        name = name,
-        role = role,
-        class = class,
-        classColor = classColor,
-        specIcon = specIcon,
-        isReady = isReady,
-        flask = flask,
-        food = food
-    }
-end
-
-local function UpdateReadyCheck()
-    for unitId in pairs(raidInfo) do
-        local playerInfo = GetPlayerInfo(unitId)
-        local line = ReadyCheck.lines[unitId]
-        
-        if playerInfo then
-            line.ready:SetTexture(statusTextures[playerInfo.isReady])
-            line.role:SetTexture(roleIcons[playerInfo.role] or "")
-            line.name:SetText(playerInfo.name)
-            line.class:SetTexture(classIcons[playerInfo.class] or "")
-            line.flask:SetTexture(playerInfo.flask and "Interface\\Icons\\Trade_Brewing" or "")
-            line.food:SetTexture(playerInfo.food and "Interface\\Icons\\INV_Misc_Food_73" or "")
-            line.consumes:SetText((playerInfo.flask and "Flask" or "") .. " " .. (playerInfo.food and "Food" or ""))
-        end
-    end
-end
-
-local function DisplayRaidInfo()
-    local numMembers = GetNumGroupMembers()
-    if numMembers > 0 then
-        for i = 1, numMembers do
-            local unitId = "raid"..i
-            local name = UnitName(unitId)
-            if name then
-                raidInfo[name] = GetPlayerInfo(unitId)
-                QueueInspect(unitId)
+local function UpdateRaidInfo(unit)
+	local numRaidMembers = GetNumGroupMembers()
+	if numRaidMembers > numGroupMembers then
+		numGroupMembers = numGroupMembers + 1
+	elseif numRaidMembers < numGroupMembers then
+		numGroupMembers = numGroupMembers - 1
+	end
+	
+		local num = 0
+		for i = 1, numGroupMembers do
+			local name = GetRaidRosterInfo(i)
+			if name == raidInfo[unit].name then
+				num = i
+				break
+			end
+		end
+		
+		local online = UnitIsConnected(unit)
+		local role = UnitGroupRolesAssigned(raidInfo[unit].name)
+		
+		-- Fill frame with data
+        local line = ReadyCheck.lines[num]
+        if line then
+			-- Ready
+            if not online then
+                line.ready:SetTexture(statusTextures["notReady"])
+            end
+			-- Role
+            line.role:SetFormattedText("%s", roleIcons[role])
+			-- Name
+            line.name:SetText(raidInfo[unit].name)
+			-- Class / Spec
+            if raidInfo[unit].spec_icon then
+                line.class:SetTexture(raidInfo[unit].spec_icon)
+            else
+                line.class:SetTexture(classIcons[raidInfo[unit].class])
             end
         end
-        UpdateReadyCheck()
+end
+
+local function OnUnitAura(event, unitId)
+    if ReadyCheck:IsShown() then
+        UpdateRaidInfo()
     end
 end
 
--- Event handling
-local function OnEvent(self, event, ...)
-    if event == "READY_CHECK" then
-        readyCheckEndTime = GetTime() + 30
-        UpdatePlayerSpecialization()
-        DisplayRaidInfo()
-        ReadyCheck:Show()
-    elseif event == "READY_CHECK_CONFIRM" or event == "READY_CHECK_CANCEL" then
+local function ResetReadyStatus()
+	local numRaidMembers = GetNumGroupMembers()
+	if numRaidMembers <= 10 then
+		for i, line in ipairs(ReadyCheck.lines) do
+				if i > numRaidMembers then
+					break
+				end
+				line.ready:SetTexture(statusTextures["pending"])
+		end
+	end
+end
+
+local function OnReadyCheck(initiator, timeLeft)
+	local numRaidMembers = GetNumGroupMembers()
+	if numRaidMembers <= 10 then
+		ResetReadyStatus()
+		UpdateRaidInfo()
+		for i, line in ipairs(ReadyCheck.lines) do
+			if line.name and line.name:GetText() == initiator then
+				line.ready:SetTexture(statusTextures["ready"])
+				break
+			end
+		end
+		ReadyCheck:Show()
+		readyCheckEndTime = GetTime() + timeLeft
+	end
+end
+
+local function OnReadyCheckConfirm(unit, ready)
+	local numRaidMembers = GetNumGroupMembers()
+	if numRaidMembers <= 10 then
+		local name = GetUnitName(unit, true)
+		local isReady = ""
+		if ready then
+			isReady = "ready"
+		else
+			isReady = "notReady"
+		end
+		for i, line in ipairs(ReadyCheck.lines) do
+			if line.name and line.name:GetText() == name then
+				line.ready:SetTexture(statusTextures[isReady])
+				break
+			end
+		end
+	end
+end
+
+local function OnReadyCheckFinished()	
+	local numRaidMembers = GetNumGroupMembers()
+	if numRaidMembers <= 10 then
+		for i, line in ipairs(ReadyCheck.lines) do
+				if i > numRaidMembers then
+					break
+				end
+				if line.ready:GetTexture() == statusTextures["pending"] then
+					line.ready:SetTexture(statusTextures["notReady"])
+				end
+		end
+		readyCheckEndTime = nil
+		ReadyCheck.timeRemaining:SetText("Ready Check Finished")
+	end
+end
+
+local function OnPlayerRegenDisabled()
+    if ReadyCheck:IsShown() then
         ReadyCheck:Hide()
-    elseif event == "UNIT_INVENTORY_CHANGED" or event == "UNIT_AURA" then
-        UpdateReadyCheck()
     end
 end
 
--- Event frame setup
-local eventFrame = CreateFrame("Frame")
-eventFrame:RegisterEvent("READY_CHECK")
-eventFrame:RegisterEvent("READY_CHECK_CONFIRM")
-eventFrame:RegisterEvent("READY_CHECK_CANCEL")
-eventFrame:RegisterEvent("UNIT_INVENTORY_CHANGED")
-eventFrame:RegisterEvent("UNIT_AURA")
-eventFrame:SetScript("OnEvent", OnEvent)
+local function OnGroupRosterUpdate()
+    if ReadyCheck:IsShown() then
+        UpdateRaidInfo()
+    end
+end
 
--- Slash command to toggle the frame
+local function OnUnitConnection(unit)
+    if ReadyCheck:IsShown() then
+        UpdateRaidInfo()
+    end
+end
+
+local function UpdateTimeRemaining()
+    if readyCheckEndTime then
+        local timeLeft = math.max(0, math.floor(readyCheckEndTime - GetTime()))
+        ReadyCheck.timeRemaining:SetText(string.format("Time Remaining: %d seconds", timeLeft))
+        if timeLeft <= 0 then
+            OnReadyCheckFinished()
+        end
+    end
+end
+
+-- Fired when info changes
+function ReadyCheck:UpdateHandler(event, guid, unit, info)
+	if info then
+		raidInfo[unit] = info
+		UpdateRaidInfo(unit)
+	end
+end
+
+-- Fired when member leaves party
+function ReadyCheck:RemoveHandler(event, guid)
+  -- guid no longer a group member
+end
+
+ReadyCheck:SetScript("OnEvent", function(self, event, ...)
+    if event == "READY_CHECK" then
+        OnReadyCheck(...)
+    elseif event == "READY_CHECK_CONFIRM" then
+        OnReadyCheckConfirm(...)
+    elseif event == "READY_CHECK_FINISHED" then
+        OnReadyCheckFinished()
+    elseif event == "PLAYER_REGEN_DISABLED" then
+        OnPlayerRegenDisabled()
+    elseif event == "GROUP_ROSTER_UPDATE" then
+        OnGroupRosterUpdate()
+    elseif event == "UNIT_CONNECTION" then
+        OnUnitConnection(...)
+	elseif event == "UNIT_AURA" then
+        OnUnitAura(...)
+    end
+end)
+
+ReadyCheck:SetScript("OnUpdate", function(self, elapsed)
+    UpdateTimeRemaining()
+end)
+
+ReadyCheck:SetScript("OnMouseDown", function(self, button)
+    if button == "LeftButton" then
+        self:StartMoving()
+    end
+end)
+
+ReadyCheck:SetScript("OnMouseUp", function(self, button)
+    if button == "LeftButton" then
+        self:StopMovingOrSizing()
+    end
+end)
+
+-- Define the slash command function
 SLASH_ARC1 = "/arc"
 SlashCmdList["ARC"] = function()
     if ReadyCheck:IsShown() then
         ReadyCheck:Hide()
     else
-        DisplayRaidInfo()
+		UpdateRaidInfo()
         ReadyCheck:Show()
     end
 end

@@ -1,0 +1,13 @@
+------------------------------------------------------------------------
+r62 | anyia3 | 2014-09-18 13:06:56 +0000 (Thu, 18 Sep 2014) | 1 line
+Changed paths:
+   A /tags/1.0.3 (from /trunk:61)
+
+Tagging 1.0.3 as the last release before switch to WoD/6.0 API.
+------------------------------------------------------------------------
+r61 | stanzilla | 2014-07-18 21:05:43 +0000 (Fri, 18 Jul 2014) | 1 line
+Changed paths:
+   M /trunk/LibGroupInSpecT-1.0.lua
+
+more ghetto talent fixing, copied from TalentMacros
+------------------------------------------------------------------------
